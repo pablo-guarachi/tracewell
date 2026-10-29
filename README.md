@@ -10,8 +10,7 @@
 </p>
 
 <p align="center">
-  <!-- Replace with your GitHub Pages URL once Pages is enabled -->
-  <a href="#run-it-locally"><strong>Live demo</strong></a> ·
+  <a href="https://pablo-guarachi.github.io/tracewell/"><strong>Live demo</strong></a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#license">License</a>
 </p>
