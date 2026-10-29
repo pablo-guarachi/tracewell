@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Product name: change it here; ui.js fills every [data-app-name] and the tab title from this tag. -->
+  <meta name="application-name" content="Tracewell" />
+  <title>Tracewell — PNG to SVG, in your browser</title>
+  <meta name="description" content="Turn logos, icons and flat illustrations into clean, editable SVG vectors. Runs entirely in your browser — your image never leaves your device." />
+  <meta name="theme-color" content="#0d0d0f" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Tracewell — PNG to SVG, in your browser" />
+  <meta property="og:description" content="Drop a PNG, get a clean SVG. Private by design: tracing runs locally with potrace (WebAssembly)." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="docs/screenshots/portfolio/01-hero-desktop.png" />
+
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <a class="skip-link" href="#convert">Skip to the converter</a>
+
+  <!-- HEADER -->
+  <header class="header">
+    <a class="header-brand" href="#top" aria-label="Home">
+      <img class="brand-icon" src="assets/logo.svg" alt="" width="32" height="32" />
+      <span class="brand-name" data-app-name>Tracewell</span>
+    </a>
+
+    <nav class="header-nav" aria-label="Page">
+      <a class="header-link" href="#how">How it works</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top" aria-labelledby="heroTitle">
+    <div class="hero-copy">
+      <h1 class="hero-title" id="heroTitle">Drop a PNG.<br />Get a clean SVG.</h1>
+      <p class="hero-lead">
+        <span data-app-name>Tracewell</span> traces logos, icons and flat illustrations into editable vector paths —
+        sharp at any size, ready for Figma, Illustrator or the web.
+      </p>
+      <ul class="hero-facts">
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9" stroke="currentColor" stroke-width="1.6"/></svg>
+          Your image never leaves your device
+        </li>
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 15c3-8 7-10 14-10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="3" cy="15" r="1.8" fill="currentColor"/><circle cx="17" cy="5" r="1.8" fill="currentColor"/></svg>
+          Potrace engine, compiled to WebAssembly
+        </li>
+        <li>
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l3.5 3.5L16 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Free, no sign-up, no upload limits
+        </li>
+      </ul>
+      <a class="btn-primary hero-cta" href="#convert">
+        Convert a PNG
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M10 16l-4.5-4.5M10 16l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <figure class="compare" id="compare">
+      <div class="compare-stage" style="--pos: 50%">
+        <img class="compare-before" src="examples/hero-before-96.png" alt="Original 96 × 96 px PNG, enlarged: the edges are visibly pixelated" width="96" height="96" />
+        <img class="compare-after" src="examples/hero-after.svg" alt="The SVG traced from the same PNG: smooth curves at any size" width="96" height="96" />
+        <div class="compare-handle" aria-hidden="true"><span></span></div>
+        <span class="compare-tag compare-tag--before" aria-hidden="true">PNG · 96 px</span>
+        <span class="compare-tag compare-tag--after" aria-hidden="true">SVG · 1.2 KB</span>
+        <input class="compare-range" id="compareRange" type="range" min="0" max="100" value="50"
+               aria-label="Compare before and after: slide to reveal the traced SVG" />
+      </div>
+      <figcaption class="compare-caption">
+        The same 96 px PNG, enlarged. Drag to compare its pixels with the traced vector.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- MAIN -->
+  <main class="main" id="convert" tabindex="-1" aria-labelledby="convertTitle">
+
+    <div class="tool-head">
+      <h2 class="section-title" id="convertTitle">Convert</h2>
+      <p class="engine-status" id="engineStatus" role="status" data-state="loading">
+        <span class="engine-dot" aria-hidden="true"></span>
+        <span class="engine-text">Loading tracing engine…</span>
+      </p>
+    </div>
+
+    <!-- UPLOAD ZONE -->
+    <section class="upload-section" aria-label="Choose an image">
+      <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Choose a PNG file, or drop one here">
+        <input type="file" id="fileInput" accept="image/png" aria-hidden="true" tabindex="-1" />
+
+        <div class="upload-idle" id="uploadIdle">
+          <div class="upload-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="8" width="32" height="32" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/>
+              <path d="M24 31V19M24 19l-5 5M24 19l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="upload-title">Drop a PNG here</p>
+          <p class="upload-subtitle">or <span class="upload-link">browse your files</span></p>
+          <p class="upload-hint">PNG only · up to ~3000 px for a quick trace · processed on this device</p>
+        </div>
+
+        <div class="upload-preview" id="uploadPreview" hidden>
+          <img id="previewThumb" alt="Preview of selected file" class="thumb" />
+          <div class="upload-file-info">
+            <p class="upload-filename" id="uploadFilename"></p>
+            <p class="upload-dims" id="uploadDims"></p>
+          </div>
+          <span class="upload-change" aria-hidden="true">Click or drop to replace</span>
+          <button class="btn-reset" id="btnReset" aria-label="Remove file and start over">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- INLINE ERROR -->
+      <div class="error-banner" id="errorBanner" hidden role="alert">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 6v4M10 13v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span id="errorText"></span>
+      </div>
+
+      <!-- SAMPLES (empty state) -->
+      <div class="samples" id="samples">
+        <p class="samples-title" id="samplesTitle">No PNG handy? Try a sample</p>
+        <div class="samples-list" role="group" aria-labelledby="samplesTitle"></div>
+        <p class="samples-tips">
+          <span class="tip tip--good">Best: logos, icons, flat art, sharp edges</span>
+          <span class="tip tip--bad">Avoid: photos, gradients, glows</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- CONTROLS -->
+    <section class="controls-section" id="controlsSection" hidden>
+
+      <!-- PRESETS -->
+      <div class="presets-row">
+        <span class="control-label">Mode</span>
+        <div class="preset-group" role="group" aria-label="Conversion preset">
+          <button class="preset-btn" id="presetLogo" aria-pressed="false">
+            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Icon / Logo
+            <span class="preset-desc">Sharp edges, flat colors</span>
+          </button>
+          <button class="preset-btn active" id="presetIllustration" aria-pressed="true">
+            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 14 Q6 6 10 10 Q14 14 17 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+            </svg>
+            Illustration
+            <span class="preset-desc">Balanced detail (default)</span>
+          </button>
+          <button class="preset-btn" id="presetSketch" aria-pressed="false">
+            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 15 Q5 12 7 13 Q9 14 11 11 Q13 8 15 9 Q17 10 17 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            </svg>
+            Sketch / Photo
+            <span class="preset-desc">Tolerant with noise</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ADVANCED TOGGLE -->
+      <button class="advanced-toggle" id="advancedToggle" aria-expanded="false" aria-controls="advancedPanel">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="advanced-toggle-icon">
+          <path d="M3 5h10M5 8h6M7 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Advanced settings
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="advanced-chevron">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- ADVANCED PANEL -->
+      <div class="advanced-panel" id="advancedPanel" hidden>
+        <div class="controls">
+          <div class="control-group">
+            <span class="control-label" id="colorModeLabel">Color mode</span>
+            <div class="toggle-switch" role="group" aria-labelledby="colorModeLabel">
+              <button class="toggle-btn active" id="btnColor" aria-pressed="true">Color</button>
+              <button class="toggle-btn" id="btnBW" aria-pressed="false">B&amp;W</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="detailSlider">
+              Detail
+              <button class="info-btn" aria-label="What is Detail?" tabindex="0">
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v5M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="tooltip" role="tooltip">
+                  <strong>Transparent bg (B&W):</strong> alpha cutoff — high includes semi-transparent pixels.<br>
+                  <strong>Solid bg (B&W):</strong> Otsu adaptive threshold offset — high = more detail.<br>
+                  <strong>Color:</strong> number of colors in palette.
+                </span>
+              </button>
+              <span class="control-value" id="detailValue">5</span>
+            </label>
+            <input type="range" id="detailSlider" min="1" max="10" value="5" class="slider" aria-label="Detail level" />
+            <div class="slider-labels"><span>Low</span><span>High</span></div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="smoothSlider">
+              Smoothing
+              <button class="info-btn" aria-label="What is Smoothing?" tabindex="0">
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v5M8 5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="tooltip" role="tooltip">
+                  Pre-blur applied before tracing.<br>
+                  <strong>High</strong> = smoother curves, rounder shapes.<br>
+                  <strong>Low</strong> = sharp, precise edges with all detail.
+                </span>
+              </button>
+              <span class="control-value" id="smoothValue">5</span>
+            </label>
+            <input type="range" id="smoothSlider" min="1" max="10" value="5" class="slider" aria-label="Smoothing level" />
+            <div class="slider-labels"><span>Low</span><span>High</span></div>
+          </div>
+        </div>
+        <p class="advanced-hint">
+          <strong>Detail</strong> — how many curves are traced (high = more precise, heavier file).
+          <strong>Smoothing</strong> — removes tiny paths (high = cleaner, lighter file).
+        </p>
+      </div>
+
+      <button class="btn-primary" id="btnConvert" aria-label="Convert to SVG" disabled>
+        <span class="btn-label">Loading engine…</span>
+        <span class="btn-spinner" hidden aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" stroke-dasharray="40" stroke-dashoffset="20" stroke-linecap="round"/>
+          </svg>
+          Converting…
+        </span>
+      </button>
+
+      <!-- LARGE IMAGE WARNING -->
+      <div class="warning-banner" id="warningBanner" hidden role="status">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M9 3.5L2 16h14L9 3.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9 9v3M9 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Large image detected — conversion may be slow. Consider using a smaller image for best results.</span>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="preview-section" id="previewSection" hidden aria-label="Result">
+      <div class="preview-grid">
+        <div class="preview-card">
+          <div class="preview-card-header">
+            <span class="preview-label">Original PNG</span>
+            <span class="preview-meta" id="origMeta"></span>
+          </div>
+          <div class="preview-img-wrap">
+            <img id="origImg" alt="Original PNG" />
+          </div>
+        </div>
+
+        <div class="preview-card preview-card--result">
+          <div class="preview-card-header">
+            <span class="preview-label">Result SVG</span>
+            <span class="preview-meta" id="resultMeta"></span>
+          </div>
+          <div class="preview-img-wrap" id="svgContainer"></div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-primary" id="btnDownload" aria-label="Download SVG file">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M10 3v9M10 12l-3-3M10 12l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Download SVG
+        </button>
+        <button class="btn-secondary" id="btnOptimize" aria-label="Optimize SVG file">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M10 2v4M10 14v4M2 10h4M14 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          Optimize
+        </button>
+        <button class="btn-secondary" id="btnOpenViewer" aria-label="Open SVG in fullscreen viewer">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 7V4a1 1 0 0 1 1-1h3M13 3h3a1 1 0 0 1 1 1v3M17 13v3a1 1 0 0 1-1 1h-3M7 17H4a1 1 0 0 1-1-1v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Inspect SVG
+        </button>
+        <button class="btn-secondary" id="btnCopy" aria-label="Copy SVG code to clipboard">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span id="copyLabel">Copy SVG code</span>
+        </button>
+        <button class="btn-ghost" id="btnConvertAnother">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5M4 3.5V6h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Convert another
+        </button>
+      </div>
+
+      <div class="optimize-result" id="optimizeResult" hidden>
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 8l3.5 3.5L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="optimizeResultText"></span>
+      </div>
+    </section>
+
+    <!-- VIEWER MODAL -->
+    <div class="viewer-overlay" id="viewerOverlay" hidden aria-modal="true" role="dialog" aria-label="SVG Inspector">
+      <div class="viewer-header">
+        <!-- Tab toggle -->
+        <div class="viewer-tab-group" role="tablist" aria-label="Viewer mode">
+          <button class="viewer-tab active" id="tabPreview" role="tab" aria-selected="true" aria-controls="viewerCanvas">Preview</button>
+          <button class="viewer-tab" id="tabCode" role="tab" aria-selected="false" aria-controls="viewerCodePanel">Code</button>
+        </div>
+
+        <div class="viewer-stats" id="viewerStats"></div>
+        <div class="viewer-controls">
+          <!-- Background toggle -->
+          <div class="viewer-bg-toggle" role="group" aria-label="Background">
+            <button class="viewer-btn viewer-bg-btn active" data-bg="checker" aria-pressed="true" aria-label="Checkerboard background">
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="1" y="1" width="6" height="6" fill="currentColor" opacity="0.5"/>
+                <rect x="9" y="1" width="6" height="6" fill="currentColor" opacity="0.15"/>
+                <rect x="1" y="9" width="6" height="6" fill="currentColor" opacity="0.15"/>
+                <rect x="9" y="9" width="6" height="6" fill="currentColor" opacity="0.5"/>
+              </svg>
+            </button>
+            <button class="viewer-btn viewer-bg-btn" data-bg="white" aria-pressed="false" aria-label="White background">
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="2" fill="white" stroke="currentColor" stroke-width="1"/>
+              </svg>
+            </button>
+            <button class="viewer-btn viewer-bg-btn" data-bg="black" aria-pressed="false" aria-label="Black background">
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="2" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="viewer-divider"></div>
+
+          <!-- Zoom controls -->
+          <button class="viewer-btn" id="viewerZoomOut" aria-label="Zoom out">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 7h4M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <span class="viewer-zoom-label" id="viewerZoomLabel">100%</span>
+          <button class="viewer-btn" id="viewerZoomIn" aria-label="Zoom in">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 5v4M5 7h4M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="viewer-btn" id="viewerZoomFit" aria-label="Fit to view" title="Fit to view">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M2 5V3h3M11 3h3v3M14 11v3h-3M5 14H2v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="viewer-divider"></div>
+
+          <!-- Close -->
+          <button class="viewer-btn viewer-close" id="viewerClose" aria-label="Close viewer">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="viewer-canvas" id="viewerCanvas">
+        <div class="viewer-svg-wrap" id="viewerSvgWrap"></div>
+      </div>
+
+      <!-- Code Editor Panel -->
+      <div class="viewer-code-panel" id="viewerCodePanel" hidden>
+
+        <!-- LEFT: collapsible tools panel -->
+        <div class="tools-panel" id="toolsPanel">
+          <button class="tools-toggle" id="toolsToggle" aria-label="Toggle tools panel" title="Toggle tools">
+            <span class="tools-toggle-icon">‹</span>
+          </button>
+          <div class="tools-content" id="toolsContent">
+
+            <!-- Selection -->
+            <div class="tools-section">
+              <div class="tools-section-title">Selection</div>
+              <button class="tools-btn tools-btn--full" id="snipSelectAll">Select all</button>
+              <button class="tools-btn tools-btn--full" id="snipMergePaths" disabled>Merge selected</button>
+              <button class="tools-btn tools-btn--full tools-btn--danger" id="snipDeletePaths" disabled>✕ Delete selected</button>
+            </div>
+
+            <!-- Flat fill -->
+            <div class="tools-section">
+              <div class="tools-section-title">Flat fill</div>
+              <div class="tools-color-row">
+                <div class="sampled-swatch" id="sampledSwatch" title="Sampled from PNG"></div>
+                <input class="tools-hex-input" type="text" id="sampledHex" placeholder="#000000" maxlength="7" spellcheck="false">
+                <span class="tools-pick-hint">← PNG</span>
+              </div>
+              <div class="tools-btn-row">
+                <button class="tools-btn tools-btn--accent" id="snipApplyColor" disabled>Fill selected</button>
+                <button class="tools-btn tools-btn--accent" id="snipApplyColorAll" disabled>Fill all</button>
+              </div>
+            </div>
+
+            <!-- Gradient -->
+            <div class="tools-section">
+              <div class="tools-section-title">Gradient</div>
+              <div class="tools-color-row">
+                <div class="grad-swatch" id="gradColor1" title="Start color — sample from PNG"></div>
+                <input class="tools-hex-input" type="text" id="gradHex1" placeholder="#000000" maxlength="7" spellcheck="false">
+                <span class="tools-pick-hint">← PNG</span>
+              </div>
+              <div class="tools-color-row">
+                <input type="color" id="gradColor2Input" value="#ffffff" title="End color">
+                <input class="tools-hex-input" type="text" id="gradHex2" placeholder="#ffffff" maxlength="7" spellcheck="false">
+              </div>
+              <div class="grad-preview" id="gradPreview"></div>
+              <div class="grad-dirs" id="gradDirs">
+                <button class="grad-dir-btn active" data-type="linear" data-x1="0" data-y1="50" data-x2="100" data-y2="50" title="Left → Right">→</button>
+                <button class="grad-dir-btn" data-type="linear" data-x1="50" data-y1="0" data-x2="50" data-y2="100" title="Top → Bottom">↓</button>
+                <button class="grad-dir-btn" data-type="linear" data-x1="0" data-y1="0" data-x2="100" data-y2="100" title="↘ Diagonal">↘</button>
+                <button class="grad-dir-btn" data-type="linear" data-x1="100" data-y1="0" data-x2="0" data-y2="100" title="↙ Diagonal">↙</button>
+                <button class="grad-dir-btn" data-type="radial-out" title="Center → Outside">◎</button>
+                <button class="grad-dir-btn" data-type="radial-in" title="Outside → Center">◉</button>
+              </div>
+              <button class="tools-btn tools-btn--gradient tools-btn--full" id="snipApplyGradient" disabled>Apply gradient</button>
+            </div>
+
+            <!-- Layers -->
+            <div class="tools-section">
+              <div class="tools-section-title">Layers</div>
+
+              <!-- Shape selector -->
+              <div class="tools-shape-row" id="layerShapeBtns">
+                <button class="tools-shape-btn active" data-shape="rect">▬ Rect</button>
+                <button class="tools-shape-btn" data-shape="circle">● Circle</button>
+                <button class="tools-shape-btn" data-shape="ellipse">⬭ Ellipse</button>
+              </div>
+
+              <!-- Dims: rect -->
+              <div id="layerDimsRect" class="layer-dims">
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">X</span><input class="dim-inp" type="number" id="layerX" value="0">
+                  <span class="dim-lbl">Y</span><input class="dim-inp" type="number" id="layerY" value="0">
+                </div>
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">W</span><input class="dim-inp" type="number" id="layerW" value="500">
+                  <span class="dim-lbl">H</span><input class="dim-inp" type="number" id="layerH" value="500">
+                </div>
+              </div>
+
+              <!-- Dims: circle -->
+              <div id="layerDimsCircle" class="layer-dims" style="display:none">
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">CX</span><input class="dim-inp" type="number" id="layerCX" value="250">
+                  <span class="dim-lbl">CY</span><input class="dim-inp" type="number" id="layerCY" value="250">
+                </div>
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">R</span><input class="dim-inp" type="number" id="layerR" value="200">
+                </div>
+              </div>
+
+              <!-- Dims: ellipse -->
+              <div id="layerDimsEllipse" class="layer-dims" style="display:none">
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">CX</span><input class="dim-inp" type="number" id="layerECX" value="250">
+                  <span class="dim-lbl">CY</span><input class="dim-inp" type="number" id="layerECY" value="250">
+                </div>
+                <div class="layer-dim-row">
+                  <span class="dim-lbl">RX</span><input class="dim-inp" type="number" id="layerRX" value="200">
+                  <span class="dim-lbl">RY</span><input class="dim-inp" type="number" id="layerRY" value="120">
+                </div>
+              </div>
+
+              <!-- Fill type -->
+              <div class="tools-shape-row" id="layerFillTypeBtns">
+                <button class="tools-shape-btn active" data-fill="flat">Flat</button>
+                <button class="tools-shape-btn" data-fill="gradient">Gradient</button>
+              </div>
+
+              <!-- Flat color -->
+              <div id="layerFlatControls" class="tools-color-row">
+                <input type="color" id="layerColorPicker" value="#ffffff">
+                <input class="tools-hex-input" type="text" id="layerHex" placeholder="#ffffff" maxlength="7" spellcheck="false">
+              </div>
+
+              <!-- Gradient controls -->
+              <div id="layerGradControls" style="display:none">
+                <div class="tools-color-row">
+                  <input type="color" id="layerGradPicker1" value="#ffffff">
+                  <input class="tools-hex-input" type="text" id="layerGradHex1" placeholder="#ffffff" maxlength="7" spellcheck="false">
+                </div>
+                <div class="tools-color-row">
+                  <input type="color" id="layerGradPicker2" value="#000000">
+                  <input class="tools-hex-input" type="text" id="layerGradHex2" placeholder="#000000" maxlength="7" spellcheck="false">
+                </div>
+                <div class="grad-dirs" id="layerGradDirs">
+                  <button class="grad-dir-btn active" data-type="linear" data-x1="0" data-y1="50" data-x2="100" data-y2="50" title="Left → Right">→</button>
+                  <button class="grad-dir-btn" data-type="linear" data-x1="50" data-y1="0" data-x2="50" data-y2="100" title="Top → Bottom">↓</button>
+                  <button class="grad-dir-btn" data-type="linear" data-x1="0" data-y1="0" data-x2="100" data-y2="100" title="↘">↘</button>
+                  <button class="grad-dir-btn" data-type="linear" data-x1="100" data-y1="0" data-x2="0" data-y2="100" title="↙">↙</button>
+                  <button class="grad-dir-btn" data-type="radial-out" title="Center → Outside">◎</button>
+                  <button class="grad-dir-btn" data-type="radial-in" title="Outside → Center">◉</button>
+                </div>
+                <div class="grad-preview" id="layerGradPreview"></div>
+              </div>
+
+              <button class="tools-btn tools-btn--full" id="snipInsertLayer">↓ Insert behind</button>
+              <button class="tools-btn tools-btn--full" id="snipUpdateLayer" style="display:none">↑ Update layer</button>
+              <button class="tools-btn tools-btn--full tools-btn--danger" id="snipDeleteLayer" style="display:none">✕ Delete layer</button>
+            </div>
+
+            <!-- Effects -->
+            <div class="tools-section">
+              <div class="tools-section-title">Effects</div>
+              <select class="tools-select" id="snippetSelect" aria-label="Choose effect">
+                <option value="">— select —</option>
+                <optgroup label="Visual">
+                  <option value="glow">✦ Glow</option>
+                  <option value="neon">⚡ Neon</option>
+                  <option value="shadow">◈ Drop Shadow</option>
+                  <option value="blur">◎ Blur</option>
+                  <option value="emboss">❑ Emboss</option>
+                  <option value="sepia">☕ Sepia</option>
+                </optgroup>
+                <optgroup label="Color">
+                  <option value="invert">⬡ Invert Colors</option>
+                  <option value="grayscale">◑ Grayscale</option>
+                  <option value="hue">◐ Hue Rotate</option>
+                </optgroup>
+                <optgroup label="Structure">
+                  <option value="stroke">◻ Stroke</option>
+                  <option value="removebg">⊠ Remove Background</option>
+                  <option value="outline">○ Outline Only</option>
+                </optgroup>
+              </select>
+              <div class="tools-param" id="snippetsParam" hidden>
+                <label class="tools-param-label" id="snippetsParamLabel" for="snippetParam"></label>
+                <input class="tools-param-input" type="number" id="snippetParam" min="0" max="360" value="180">
+              </div>
+              <button class="tools-btn tools-btn--full" id="snipApply">Apply effect</button>
+            </div>
+
+            <!-- Actions -->
+            <div class="tools-section">
+              <div class="tools-section-title">Actions</div>
+              <button class="tools-btn tools-btn--full" id="snipToggleCode">Hide code</button>
+              <button class="tools-btn tools-btn--full" id="snipReset">↺ Reset</button>
+              <button class="tools-btn tools-btn--full tools-btn--download" id="snipDownload">↓ Download</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CENTER: SVG code editor (hideable) -->
+        <textarea class="svg-editor" id="svgEditor" spellcheck="false" autocorrect="off" autocapitalize="off" aria-label="SVG source code"></textarea>
+
+        <!-- RIGHT: PNG sampler + SVG live preview -->
+        <div class="code-preview-wrap">
+          <div class="code-png-panel" id="codePngPanel">
+            <div class="code-panel-label">Original — scroll to zoom · alt+drag to pan · dblclick to reset</div>
+            <canvas class="png-sampler-canvas" id="pngSamplerCanvas"></canvas>
+          </div>
+          <div class="code-preview-divider"></div>
+          <div class="code-panel-label code-panel-label--svg">SVG — click shape to select · shift+click to multi-select</div>
+          <div class="code-preview" id="codePreview" aria-label="Live preview" style="position:relative">
+            <div class="code-preview-inner" id="codePreviewInner"></div>
+            <div class="layer-handle-overlay" id="layerHandleOverlay"></div>
+          </div>
+          <div class="code-zoom-controls" aria-label="Preview zoom">
+            <button class="code-zoom-btn" id="codeZoomOut" aria-label="Zoom out">−</button>
+            <span class="code-zoom-label" id="codeZoomLabel">100%</span>
+            <button class="code-zoom-btn" id="codeZoomIn" aria-label="Zoom in">+</button>
+            <button class="code-zoom-btn" id="codeZoomFit" aria-label="Fit" title="Fit">⤢</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="viewer-footer" id="viewerFooter">
+        <span>Scroll to zoom · Drag to pan · <kbd>Esc</kbd> to close</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how" aria-labelledby="howTitle">
+    <h2 class="section-title" id="howTitle">How it works</h2>
+    <ol class="how-steps">
+      <li>
+        <h3>Read the pixels</h3>
+        <p>Your PNG is drawn onto a canvas in this tab. Nothing is uploaded; there is no server.</p>
+      </li>
+      <li>
+        <h3>Split into colour layers</h3>
+        <p>A median-cut palette groups similar colours, then each colour becomes its own black-and-white mask.</p>
+      </li>
+      <li>
+        <h3>Trace every layer</h3>
+        <p>Potrace, compiled to WebAssembly, fits Bézier curves to each mask. The layers are stacked into one SVG you can inspect, edit and download.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p class="footer-brand">
+      <img src="assets/logo.svg" alt="" width="20" height="20" />
+      <span data-app-name>Tracewell</span>
+      <span class="footer-muted">runs entirely in your browser — no uploads, no tracking.</span>
+    </p>
+    <p class="footer-muted">
+      Tracing by <a href="https://potrace.sourceforge.net/" rel="noopener">Potrace</a> (Peter Selinger, GPL)
+      via <a href="https://github.com/IguteChung/potrace-wasm" rel="noopener">potrace-wasm</a>, loaded at runtime.
+      App code MIT.
+    </p>
+  </footer>
+
+  <div class="sr-only" id="liveStatus" aria-live="polite"></div>
+
+  <!-- SCRIPTS -->
+  <script src="samples.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+  <!-- potrace-wasm: tracing engine (GPL-2.0), fetched from the esm.sh CDN at runtime -->
+  <script type="module">
+    async function loadEngine() {
+      try {
+        const { loadFromCanvas } = await import('https://esm.sh/potrace-wasm@1.0.4');
+        window.loadFromCanvas = loadFromCanvas;
+        document.dispatchEvent(new CustomEvent('potraceReady'));
+      } catch (err) {
+        document.dispatchEvent(new CustomEvent('potraceError', { detail: err }));
+      }
+    }
+    loadEngine();
+  </script>
+</body>
+</html>
